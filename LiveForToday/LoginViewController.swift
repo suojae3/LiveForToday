@@ -29,45 +29,33 @@ class LoginViewController: UIViewController {
     
     @IBAction func authButton(_ sender: Any) {
         
-        //LAContext 인스턴스 생성 (신체인증 필수 객체)
         let context = LAContext()
-        
-        //error 처리 변수
         var error: NSError? = nil
         
-        // 신체인증 기능 지원하는 디바이스인지 확인하기
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-        
-            let reason = "Please authenticate yourself to proceed."
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            print("Device does not support Face ID / Touch ID.")
+            return
+        }
 
-                //기능 지원하는 디바이스일 경우 신체인증 시도
-                context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
-                    
-                    // UI와 상호작용하기 위해 메인스레드에서 작업 강제
-                    DispatchQueue.main.async {
-                        
-                        if success {
-                            
-                            //신체인증 성공하면 다음페이지로 이동하기
-                            print("Authentication was successful.")
-                            guard let whatVC = self.storyboard?.instantiateViewController(withIdentifier: "WhatViewController") else {return}
-                            self.navigationController?.pushViewController(whatVC, animated: true)
-                                                
-                        } else {
-                            
-                            // 신체인증 실패할 경우 다시 시도해보라고 alert창 띄우기
-                            print("Authentication failed.")
-                        
-                        }
-                    }
-                }
-            } else {
+        let reason = "Please authenticate yourself to proceed."
+        
+        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { [weak self] success, authenticationError in
+            
+            DispatchQueue.main.async {
                 
-                // 디바이스가 신체기능 지원을 하지 않는다고 alert창 띄우기
-                print("Device does not support Face ID / Touch ID.")
+                guard success else {
+                    print("Authentication failed.")
+                    return
+                }
+
+                print("Authentication was successful.")
+                
+                guard let whatVC = self?.storyboard?.instantiateViewController(withIdentifier: "WhatViewController") else { return }
+                self?.navigationController?.pushViewController(whatVC, animated: true)
             }
-    
+        }
     }
+
 }
     
 

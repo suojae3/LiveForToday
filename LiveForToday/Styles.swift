@@ -30,8 +30,3 @@ class Label {
 }
 
 
-class TextField {
-    static func setupTextfield(_ textField: UITextField) {
-        
-    }
-}
